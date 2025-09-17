@@ -9,6 +9,8 @@ int main (){
     da = 0.05 * basic;
     gross = basic + hra + da;
     
+    printf("House Rent = %.2f\n", hra);
+    printf("Dearness Allowance = %.2f\n", da);
 	printf("Gross salary = %.2f\n", gross);
     return 0;
 }
