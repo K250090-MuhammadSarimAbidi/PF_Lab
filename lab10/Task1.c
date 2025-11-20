@@ -2,105 +2,97 @@
 #include <string.h>
 
 #define MAX 10
-#define LEN 120
+#define SIZE 100
 
-char songs[MAX][LEN];
-int count = 0;
+void printList(char arr[][SIZE], int n) {
+    int i;
+    printf("\nFinal Playlist:\n");
+    for(i = 0; i < n; i++) {
+        printf("%d. %s\n", i+1, arr[i]);
+    }
+}
 
-void load() {
-    FILE *fp = fopen("playlist.txt", "r");
-    if (!fp) return;
-    while (count < MAX && fgets(songs[count], LEN, fp)) {
-        songs[count][strcspn(songs[count], "\n")] = '\0';
-        count++;
+void saveToFile(char arr[][SIZE], int n) {
+    FILE *fp = fopen("playlist.txt", "w");
+    int i;
+    for(i = 0; i < n; i++) {
+        fprintf(fp, "%s\n", arr[i]);
     }
     fclose(fp);
-}
-
-void save() {
-    FILE *fp = fopen("playlist.txt", "w");
-    for (int i = 0; i < count; i++)
-        fprintf(fp, "%s\n", songs[i]);
-    fclose(fp);
-}
-
-void add() {
-    if (count >= MAX) { printf("Playlist full.\n"); return; }
-    printf("Enter song: ");
-    fgets(songs[count], LEN, stdin);
-    songs[count][strcspn(songs[count], "\n")] = '\0';
-    count++;
-}
-
-void del() {
-    char name[LEN];
-    printf("Delete which song: ");
-    fgets(name, LEN, stdin);
-    name[strcspn(name, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(songs[i], name) == 0) {
-            for (int j = i; j < count - 1; j++)
-                strcpy(songs[j], songs[j + 1]);
-            count--;
-            return;
-        }
-    printf("Not found.\n");
-}
-
-void update() {
-    char name[LEN];
-    printf("Update which song: ");
-    fgets(name, LEN, stdin);
-    name[strcspn(name, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(songs[i], name) == 0) {
-            printf("New title: ");
-            fgets(songs[i], LEN, stdin);
-            songs[i][strcspn(songs[i], "\n")] = '\0';
-            return;
-        }
-    printf("Not found.\n");
-}
-
-void search() {
-    char key[LEN];
-    printf("Search title: ");
-    fgets(key, LEN, stdin);
-    key[strcspn(key, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(songs[i], key) == 0)
-            printf("Found: %s\n", songs[i]);
-}
-
-void list() {
-	printf("List title: \n");
-    
-    for (int i = 0; i < count; i++)
-        printf("%s\n", songs[i]);
-    
 }
 
 int main() {
-    load();
-    printf("Music Playlist");
+    char songs[MAX][SIZE];
+    int count = 0;
+    char temp[SIZE];
+    int choice, i;
 
-    char c[5];
-    while (1) {
-        printf("\n1.Add 2.Delete 3.Update 4.Search 5.List (-1 exit): ");
-        fgets(c, 5, stdin);
+    FILE *fp = fopen("playlist.txt", "r");
+    while(fp && fgets(temp, SIZE, fp) && count < MAX) {
+        temp[strcspn(temp, "\n")] = '\0';
+        strcpy(songs[count++], temp);
+    }
+    if(fp) fclose(fp);
 
-        if (strcmp(c, "-1\n") == 0) break;
-        else if (c[0] == '1') add();
-        else if (c[0] == '2') del();
-        else if (c[0] == '3') update();
-        else if (c[0] == '4') search();
-        else if (c[0] == '5') list();
+    while(1) {
+        printf("\n1 Add  2 Delete  3 Update  4 Search  5 Exit\n");
+        scanf("%d", &choice);
+        getchar();
+
+        if(choice == 1) {
+            if(count >= MAX) { printf("Playlist full!\n"); continue; }
+            printf("Enter song title: ");
+            fgets(songs[count], SIZE, stdin);
+            songs[count][strlen(songs[count])-1] = '\0';
+            count++;
+        }
+        else if(choice == 2) {
+            printf("Enter title to delete: ");
+            fgets(temp, SIZE, stdin);
+            temp[strlen(temp)-1] = '\0';
+
+            for(i=0; i<count; i++) {
+                if(strcmp(songs[i], temp) == 0) {
+                    for(int j=i; j<count-1; j++)
+                        strcpy(songs[j], songs[j+1]);
+                    count--;
+                    break;
+                }
+            }
+        }
+        else if(choice == 3) {
+            printf("Enter title to update: ");
+            fgets(temp, SIZE, stdin);
+            temp[strlen(temp)-1] = '\0';
+
+            for(i=0; i<count; i++) {
+                if(strcmp(songs[i], temp) == 0) {
+                    printf("Enter new title: ");
+                    fgets(songs[i], SIZE, stdin);
+                    songs[i][strlen(songs[i])-1] = '\0';
+                    break;
+                }
+            }
+        }
+        else if(choice == 4) {
+            printf("Search title: ");
+            fgets(temp, SIZE, stdin);
+            temp[strlen(temp)-1] = '\0';
+
+            for(i=0; i<count; i++) {
+                if(strcmp(songs[i], temp) == 0) {
+                    printf("Found at position %d\n", i+1);
+                }
+            }
+        }
+        else if(choice == 5) {
+            break;
+        }
     }
 
-    save();
+    printList(songs, count);
+    saveToFile(songs, count);
+
     return 0;
 }
 

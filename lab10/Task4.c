@@ -1,106 +1,76 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX 50
-#define LEN 120
+#define MAX 40
+#define SIZE 100
 
-char affirm[MAX][LEN];
-int count = 0;
-
-void load() {
-    FILE *fp = fopen("affirm.txt", "r");
-    if (!fp) return;
-    while (count < MAX && fgets(affirm[count], LEN, fp)) {
-        affirm[count][strcspn(affirm[count], "\n")] = '\0';
-        count++;
-    }
-    fclose(fp);
+void printList(char arr[][SIZE], int n) {
+    for(int i=0;i<n;i++)
+        printf("%d. %s\n", i+1, arr[i]);
 }
 
-void save() {
+void saveToFile(char arr[][SIZE], int n) {
     FILE *fp = fopen("affirm.txt", "w");
-    for (int i = 0; i < count; i++)
-        fprintf(fp, "%s\n", affirm[i]);
+    for(int i=0;i<n;i++)
+        fprintf(fp, "%s\n", arr[i]);
     fclose(fp);
-}
-
-void add() {
-    if (count >= MAX) return;
-    printf("Enter affirmation: ");
-    fgets(affirm[count], LEN, stdin);
-    affirm[count][strcspn(affirm[count], "\n")] = '\0';
-    count++;
-}
-
-void update() {
-    char s[LEN];
-    printf("Update which: ");
-    fgets(s, LEN, stdin);
-    s[strcspn(s, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(affirm[i], s) == 0) {
-            printf("New text: ");
-            fgets(affirm[i], LEN, stdin);
-            affirm[i][strcspn(affirm[i], "\n")] = '\0';
-            return;
-        }
-    printf("Not found.\n");
-}
-
-void del() {
-    char s[LEN];
-    printf("Delete which: ");
-    fgets(s, LEN, stdin);
-    s[strcspn(s, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(affirm[i], s) == 0) {
-            for (int j = i; j < count - 1; j++)
-                strcpy(affirm[j], affirm[j + 1]);
-            count--;
-            return;
-        }
-    printf("Not found.\n");
-}
-
-void search() {
-    char s[LEN];
-    printf("Search: ");
-    fgets(s, LEN, stdin);
-    s[strcspn(s, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strstr(affirm[i], s))
-            printf("Found: %s\n", affirm[i]);
-}
-
-void list() {
-	printf("List title: \n");
-    
-    for (int i = 0; i < count; i++)
-        printf("%s\n", affirm[i]);
-    
 }
 
 int main() {
-    load();
-    printf("Wellness App");
+    char list[MAX][SIZE];
+    int count = 0, choice, i;
+    char temp[SIZE];
 
-    char c[5];
-    while (1) {
-        printf("\n1.Add 2.Delete 3.Update 4.Search 5.List (-1 exit): ");
-        fgets(c, 5, stdin);
+    FILE *fp = fopen("affirm.txt", "r");
+    while(fp && fgets(temp,SIZE,fp) && count<MAX) {
+        temp[strcspn(temp,"\n")]='\0';
+        strcpy(list[count++], temp);
+    }
+    if(fp) fclose(fp);
 
-        if (strcmp(c, "-1\n") == 0) break;
-        else if (c[0] == '1') add();
-        else if (c[0] == '2') update();
-        else if (c[0] == '3') del();
-        else if (c[0] == '4') search();
-        else if (c[0] == '5') list();
+    while(1) {
+        printf("\n1 Add 2 Delete 3 Update 4 Search 5 Exit\n");
+        scanf("%d",&choice); getchar();
+
+        if(choice==1) {
+            printf("Enter affirmation: ");
+            fgets(list[count],SIZE,stdin);
+            list[count][strlen(list[count])-1]='\0';
+            count++;
+        }
+        else if(choice==2) {
+            printf("Delete which: ");
+            fgets(temp,SIZE,stdin); temp[strlen(temp)-1]='\0';
+            for(i=0;i<count;i++)
+                if(strcmp(list[i],temp)==0) {
+                    for(int j=i;j<count-1;j++)
+                        strcpy(list[j], list[j+1]);
+                    count--;
+                    break;
+                }
+        }
+        else if(choice==3) {
+            printf("Update which: ");
+            fgets(temp,SIZE,stdin); temp[strlen(temp)-1]='\0';
+            for(i=0;i<count;i++)
+                if(strcmp(list[i],temp)==0) {
+                    printf("New text: ");
+                    fgets(list[i],SIZE,stdin);
+                    list[i][strlen(list[i])-1]='\0';
+                }
+        }
+        else if(choice==4) {
+            printf("Search text: ");
+            fgets(temp,SIZE,stdin); temp[strlen(temp)-1]='\0';
+            for(i=0;i<count;i++)
+                if(strstr(list[i], temp))
+                    printf("%s\n", list[i]);
+        }
+        else if(choice==5) break;
     }
 
-    save();
+    printList(list, count);
+    saveToFile(list, count);
     return 0;
 }
 

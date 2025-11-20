@@ -1,106 +1,86 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX 50
-#define LEN 120
+#define MAX 20
+#define SIZE 100
 
-char levels[MAX][LEN];
-int count = 0;
-
-void load() {
-    FILE *fp = fopen("levels.txt", "r");
-    if (!fp) return;
-    while (count < MAX && fgets(levels[count], LEN, fp)) {
-        levels[count][strcspn(levels[count], "\n")] = '\0';
-        count++;
-    }
-    fclose(fp);
+void printList(char arr[][SIZE], int n) {
+    int i;
+    printf("\nFinal Levels:\n");
+    for(i = 0; i < n; i++)
+        printf("%d. %s\n", i+1, arr[i]);
 }
 
-void save() {
+void saveToFile(char arr[][SIZE], int n) {
     FILE *fp = fopen("levels.txt", "w");
-    for (int i = 0; i < count; i++)
-        fprintf(fp, "%s\n", levels[i]);
+    int i;
+    for(i = 0; i < n; i++)
+        fprintf(fp, "%s\n", arr[i]);
     fclose(fp);
-}
-
-void add() {
-    if (count >= MAX) return;
-    printf("Enter level: ");
-    fgets(levels[count], LEN, stdin);
-    levels[count][strcspn(levels[count], "\n")] = '\0';
-    count++;
-}
-
-void del() {
-    char s[LEN];
-    printf("Delete which: ");
-    fgets(s, LEN, stdin);
-    s[strcspn(s, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(levels[i], s) == 0) {
-            for (int j = i; j < count - 1; j++)
-                strcpy(levels[j], levels[j + 1]);
-            count--;
-            return;
-        }
-    printf("Not found.\n");
-}
-
-void update() {
-    char s[LEN];
-    printf("Update which: ");
-    fgets(s, LEN, stdin);
-    s[strcspn(s, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(levels[i], s) == 0) {
-            printf("New text: ");
-            fgets(levels[i], LEN, stdin);
-            levels[i][strcspn(levels[i], "\n")] = '\0';
-            return;
-        }
-    printf("Not found.\n");
-}
-
-void search() {
-    char s[LEN];
-    printf("Search: ");
-    fgets(s, LEN, stdin);
-    s[strcspn(s, "\n")] = '\0';
-
-    for (int i = 0; i < count; i++)
-        if (strcmp(levels[i], s) == 0)
-            printf("Found: %s\n", levels[i]);
-}
-
-void list() {
-	printf("List title: ");
-    
-    for (int i = 0; i < count; i++)
-        printf("%s\n", levels[i]);
-    
 }
 
 int main() {
-    load();
-    printf("Game Information Tracker");
+    char levels[MAX][SIZE];
+    int count = 0, choice, i;
+    char temp[SIZE];
 
-    char c[5];
-    while (1) {
-        printf("\n1.Add 2.Update 3.Delete 4.Search 5.List (-1 exit): ");
-        fgets(c, 5, stdin);
+    FILE *fp = fopen("levels.txt", "r");
+    while(fp && fgets(temp, SIZE, fp) && count < MAX) {
+        temp[strcspn(temp, "\n")] = '\0';
+        strcpy(levels[count++], temp);
+    }
+    if(fp) fclose(fp);
 
-        if (strcmp(c, "-1\n") == 0) break;
-        else if (c[0] == '1') add();
-        else if (c[0] == '2') update();
-        else if (c[0] == '3') del();
-        else if (c[0] == '4') search();
-        else if (c[0] == '5') list();
+    while(1) {
+        printf("\n1 Add  2 Delete  3 Update  4 Search  5 Exit\n");
+        scanf("%d", &choice); getchar();
+
+        if(choice == 1) {
+            if(count >= MAX) continue;
+            printf("Enter level description: ");
+            fgets(levels[count], SIZE, stdin);
+            levels[count][strlen(levels[count])-1] = '\0';
+            count++;
+        }
+        else if(choice == 2) {
+            printf("Enter level to delete: ");
+            fgets(temp, SIZE, stdin);
+            temp[strlen(temp)-1] = '\0';
+
+            for(i=0;i<count;i++) {
+                if(strcmp(levels[i], temp)==0) {
+                    for(int j=i;j<count-1;j++)
+                        strcpy(levels[j], levels[j+1]);
+                    count--;
+                    break;
+                }
+            }
+        }
+        else if(choice == 3) {
+            printf("Enter level to update: ");
+            fgets(temp, SIZE, stdin);
+            temp[strlen(temp)-1] = '\0';
+
+            for(i=0;i<count;i++) {
+                if(strcmp(levels[i], temp)==0) {
+                    printf("Enter new description: ");
+                    fgets(levels[i], SIZE, stdin);
+                    levels[i][strlen(levels[i])-1] = '\0';
+                }
+            }
+        }
+        else if(choice == 4) {
+            printf("Search: ");
+            fgets(temp, SIZE, stdin); temp[strlen(temp)-1]='\0';
+            for(i=0;i<count;i++)
+                if(strcmp(levels[i], temp)==0)
+                    printf("Found at %d\n", i+1);
+        }
+        else if(choice == 5) break;
     }
 
-    save();
+    printList(levels, count);
+    saveToFile(levels, count);
     return 0;
 }
 
